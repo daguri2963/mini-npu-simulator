@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 EPSILON = 1e-9
-REPEATS = 1000  # At least ten calls; more calls make short timings less noisy.
+REPEATS = 10  # 과제의 최소 기준: 각 크기와 구현마다 MAC을 10회 호출한다.
 CASE_KEY = re.compile(r"size_(\d+)_(\d+)\Z")
 FILTER_KEY = re.compile(r"size_(\d+)\Z")
 
@@ -39,6 +39,7 @@ def validate_matrix(value, size, name):
 
 
 def mac_2d(pattern, filter_matrix):
+    """같은 위치의 값을 곱해 누적한다. 0×0은 가산점이 아니다."""
     score = 0.0
     for r in range(len(pattern)):
         for c in range(len(pattern[r])):
@@ -58,6 +59,7 @@ def mac_1d(pattern, filter_matrix):
 
 
 def decide(score_a, score_b, label_a="A", label_b="B"):
+    """모드와 무관하게 점수 차이가 epsilon 미만이면 동점이다."""
     if abs(score_a - score_b) < EPSILON:
         return "UNDECIDED"
     return label_a if score_a > score_b else label_b
@@ -101,7 +103,13 @@ def read_matrix(name, size=3):
 
 
 def benchmark(matrix, filter_matrix, repeats=REPEATS):
-    """Compare identical input and call counts; conversion stays outside timing."""
+    """동일 입력으로 각 MAC 함수 호출만 repeats회 재고 평균 ms를 반환한다.
+
+    파일 읽기, 입력, 출력과 1D 변환은 타이머 밖에서 처리한다. 아주 짧은
+    호출에는 타이머/반복문 비용과 시스템 부하가 섞이므로 수치는 참고값이다.
+    """
+    if repeats < 10:
+        raise ValueError("성능 측정은 최소 10회 반복해야 합니다.")
     flat_matrix = flatten(matrix)
     flat_filter = flatten(filter_matrix)
     timings = []
@@ -236,6 +244,8 @@ def json_mode(path):
     print("\n[결과 요약]")
     print("총 테스트: {}개 | 통과: {}개 | 실패: {}개".format(
         len(patterns), len(patterns) - len(failures), len(failures)))
+    failure_rate = (len(failures) / len(patterns) * 100) if patterns else 0.0
+    print("실패 비율: {:.1f}%".format(failure_rate))
     if failures:
         print("실패 케이스:")
         for key, reason in failures:
