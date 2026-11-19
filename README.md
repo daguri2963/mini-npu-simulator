@@ -41,6 +41,8 @@ mini-npu-simulator/
 
 Python 3.8 이상, 표준 라이브러리만 사용합니다. `main.py`, `data.json`, `tests/`는 저장소 루트에 있습니다. 목표는 3×3 직접 입력과 JSON 일괄 분석으로 Cross/X를 판정하고, MAC 연산과 크기별 성능을 설명하는 것입니다.
 
+처음 코드를 읽는다면 `main.py`의 `make_pattern` → `mac_2d` → `decide` → `user_mode` → `json_mode` 순서가 이해하기 쉽습니다. 각 함수의 `"""..."""` 문장은 함수 설명이고, `#`로 시작하는 줄은 실행되지 않는 주석입니다. `tests/test_main.py`는 정답을 자동 확인하는 코드입니다. `data.json`은 데이터 형식이라 파일 안에 주석을 넣을 수 없으며, 키와 라벨 규칙은 아래 **구현 요약**에 설명했습니다.
+
 ## 실행 방법
 
 ```powershell
